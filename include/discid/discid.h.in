@@ -391,6 +391,20 @@ LIBDISCID_API int discid_get_track_offset(DiscId *d, int track_num);
  */
 LIBDISCID_API int discid_get_track_length(DiscId *d, int track_num);
 
+
+// dro addition
+/**
+ * Return the type of a track (audio / data).
+ *
+ * Only track numbers between (and including) discid_get_first_track_num()
+ * and discid_get_last_track_num() may be used.
+ *
+ * @param d a DiscId object created by discid_new()
+ * @param track_num the number of a track
+ * @return type of the specified track
+ */
+LIBDISCID_API int discid_get_track_type(DiscId *d, int track_num);
+
 /**
  * Return the Media Catalogue Number (MCN) for the disc.
  *

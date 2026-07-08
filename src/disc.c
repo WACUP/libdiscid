@@ -46,11 +46,12 @@
 
 
 static void create_disc_id(mb_disc_private *d, char buf[]);
+#if 0
 static void create_freedb_disc_id(mb_disc_private *d, char buf[]);
 static char *create_toc_string(mb_disc_private *d, char *sep);
 static void create_submission_url(mb_disc_private *d, char buf[]);
 static void create_webservice_url(mb_disc_private *d, char buf[]);
-
+#endif
 
 /****************************************************************************
  *
@@ -68,14 +69,14 @@ void discid_free(DiscId *d) {
 	free(d);
 }
 
-
+#ifdef NO_ERROR_MSG
 char *discid_get_error_msg(DiscId *d) {
 	mb_disc_private *disc = (mb_disc_private *) d;
 	assert(disc != NULL);
 
 	return disc->error_msg;
 }
-
+#endif
 
 char *discid_get_id(DiscId *d) {
 	mb_disc_private *disc = (mb_disc_private *) d;
@@ -91,7 +92,7 @@ char *discid_get_id(DiscId *d) {
 	return disc->id;
 }
 
-
+#if 0
 char *discid_get_freedb_id(DiscId *d) {
 	mb_disc_private *disc = (mb_disc_private *) d;
 	assert(disc != NULL);
@@ -152,12 +153,15 @@ char *discid_get_webservice_url(DiscId *d) {
 
 	return disc->webservice_url;
 }
+#endif
 
+#if 0
 int discid_read(DiscId *d, const char *device) {
 	return discid_read_sparse(d, device, UINT_MAX);
 }
+#endif
 
-int discid_read_sparse(DiscId *d, const char *device, unsigned int features) {
+int discid_read_sparse(DiscId *d, const char *device, unsigned int features, void *hDrive) {
 	mb_disc_private *disc = (mb_disc_private *) d;
 	assert(disc != NULL);
 
@@ -172,14 +176,15 @@ int discid_read_sparse(DiscId *d, const char *device, unsigned int features) {
 	/* pre-read the TOC to reduce "not-ready" problems
 	 * See LIB-44 (issues with multi-session discs)
 	 */
-	if (!mb_disc_read_unportable(disc, device, DISCID_FEATURE_READ)) {
+	if (!mb_disc_read_unportable(disc, device, DISCID_FEATURE_READ, hDrive)) {
 		return 0;
 	}
 	memset(disc, 0, sizeof(mb_disc_private));
 
-	return disc->success = mb_disc_read_unportable(disc, device, features);
+	return disc->success = mb_disc_read_unportable(disc, device, features, hDrive);
 }
 
+#if 0
 int discid_put(DiscId *d, int first, int last, int *offsets) {
 	int i, disc_length;
 	mb_disc_private *disc = (mb_disc_private *) d;
@@ -191,26 +196,35 @@ int discid_put(DiscId *d, int first, int last, int *offsets) {
 	/* extensive checking of given parameters */
 	if (first > last || first < 1
 			|| first > 99 || last < 1 || last > 99) {
-
+#ifdef NO_ERROR_MSG
 		sprintf(disc->error_msg, "Illegal track limits");
+#endif
 		return 0;
 	}
 	if (offsets == NULL) {
+#ifdef NO_ERROR_MSG
 		sprintf(disc->error_msg, "No offsets given");
+#endif
 		return 0;
 	}
 	disc_length = offsets[0];
 	if (disc_length > MAX_DISC_LENGTH) {
+#ifdef NO_ERROR_MSG
 		sprintf(disc->error_msg, "Disc too long");
+#endif
 		return 0;
 	}
 	for (i = 0; i <= last; i++) {
 		if (offsets[i] > disc_length) {
+#ifdef NO_ERROR_MSG
 			sprintf(disc->error_msg, "Invalid offset");
+#endif
 			return 0;
 		}
 		if (i > 1 && offsets[i-1] > offsets[i]) {
+#ifdef NO_ERROR_MSG
 			sprintf(disc->error_msg, "Invalid order");
+#endif
 			return 0;
 		}
 	}
@@ -224,7 +238,7 @@ int discid_put(DiscId *d, int first, int last, int *offsets) {
 
 	return 1;
 }
-
+#endif
 
 char *discid_get_default_device(void) {
 	return mb_disc_get_default_device_unportable();
@@ -293,6 +307,23 @@ int discid_get_track_length(DiscId *d, int i) {
 		return disc->track_offsets[0] - disc->track_offsets[i];
 }
 
+
+// dro change - makes it simpler to get the
+// type of the track for the view display &
+// to visually help if there's a bad image.
+int discid_get_track_type(DiscId *d, int i) {
+	mb_disc_private *disc = (mb_disc_private *)d;
+	assert(disc != NULL);
+	assert(disc->success);
+	assert(TRACK_NUM_IS_VALID(disc, i));
+
+	if (!disc->success || !TRACK_NUM_IS_VALID(disc, i))
+		return -1;
+	else
+		return disc->track_type[i];
+}
+
+#if 0
 char *discid_get_mcn(DiscId *d) {
 	mb_disc_private *disc = (mb_disc_private *) d;
 	assert(disc != NULL);
@@ -339,6 +370,7 @@ void discid_get_feature_list(char *features[DISCID_FEATURE_LENGTH]) {
 
 	return;
 }
+#endif
 
 char *discid_get_version_string(void) {
 #ifdef HAVE_CONFIG_H
@@ -394,6 +426,7 @@ static void create_disc_id(mb_disc_private *d, char buf[]) {
 }
 
 
+#if 0
 /*
  * Create a FreeDB DiscID based on the TOC data found in the DiscId object.
  * The DiscID is placed in the provided string buffer.
@@ -504,5 +537,6 @@ static void create_webservice_url(mb_disc_private *d, char buf[]) {
 
 	cat_toc_param(d, buf);
 }
+#endif
 
 /* EOF */

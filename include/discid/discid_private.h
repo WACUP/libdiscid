@@ -89,14 +89,23 @@ typedef struct {
 	int first_track_num;
 	int last_track_num;
 	int track_offsets[100];
+	int track_type[100];
 	char id[MB_DISC_ID_LENGTH+1];
+#ifdef NO_MISC
 	char freedb_id[FREEDB_DISC_ID_LENGTH+1];
+#endif
+#if 0
 	char submission_url[MB_MAX_URL_LENGTH+1];
 	char webservice_url[MB_MAX_URL_LENGTH+1];
 	char toc_string[MB_TOC_STRING_LENGTH+1];
+#endif
+#ifdef NO_ERROR_MSG
 	char error_msg[MB_ERROR_MSG_LENGTH+1];
+#endif
+#ifdef NO_MISC
 	char isrc[100][ISRC_STR_LENGTH+1];
 	char mcn[MCN_STR_LENGTH+1];
+#endif
 	int success;
 } mb_disc_private;
 
@@ -123,7 +132,7 @@ typedef struct {
  *
  * On error, 0 is returned. On success, 1 is returned.
  */
-LIBDISCID_INTERNAL int mb_disc_read_unportable(mb_disc_private *disc, const char *device, unsigned int features);
+LIBDISCID_INTERNAL int mb_disc_read_unportable(mb_disc_private *disc, const char *device, unsigned int features, void *hDrive);
 
 
 /*
