@@ -16,6 +16,8 @@
 #include <string.h>
 #include "sha1.h"
 
+#if 0
+
 /* UNRAVEL should be fastest & biggest */
 /* UNROLL_LOOPS should be just as big, but slightly slower */
 /* both undefined should be smallest and slowest */
@@ -185,10 +187,13 @@ nether regions of the anatomy...
 #endif /* !UNRAVEL */
 }
 
+#endif
+
 /* initialize the SHA digest */
 
 void sha_init(SHA_INFO *sha_info)
 {
+#if 0
     sha_info->digest[0] = 0x67452301L;
     sha_info->digest[1] = 0xefcdab89L;
     sha_info->digest[2] = 0x98badcfeL;
@@ -197,12 +202,21 @@ void sha_init(SHA_INFO *sha_info)
     sha_info->count_lo = 0L;
     sha_info->count_hi = 0L;
     sha_info->local = 0;
+#else
+    sha_info->evp_ctx = EVP_MD_CTX_new();
+
+    if (sha_info->evp_ctx != NULL)
+    {
+        EVP_DigestInit_ex(sha_info->evp_ctx, EVP_sha1(), NULL);
+    }
+#endif
 }
 
 /* update the SHA digest */
 
 void sha_update(SHA_INFO *sha_info, SHA_BYTE *buffer, size_t count)
 {
+#if 0
     size_t i;
     SHA_LONG clo;
 
@@ -235,12 +249,19 @@ void sha_update(SHA_INFO *sha_info, SHA_BYTE *buffer, size_t count)
     }
     memcpy(sha_info->data, buffer, count);
     sha_info->local = count;
+#else
+    if (sha_info->evp_ctx != NULL)
+    {
+        EVP_DigestUpdate(sha_info->evp_ctx, buffer, count);
+    }
+#endif
 }
 
 /* finish computing the SHA digest */
 
 void sha_final(unsigned char digest[20], SHA_INFO *sha_info)
 {
+#if 0
     int count;
     SHA_LONG lo_bit_count, hi_bit_count;
 
@@ -285,6 +306,15 @@ void sha_final(unsigned char digest[20], SHA_INFO *sha_info)
     digest[17] = (unsigned char) ((sha_info->digest[4] >> 16) & 0xff);
     digest[18] = (unsigned char) ((sha_info->digest[4] >>  8) & 0xff);
     digest[19] = (unsigned char) ((sha_info->digest[4]      ) & 0xff);
+#else
+    if (sha_info->evp_ctx != NULL)
+    {
+        unsigned int length = 20;
+        EVP_DigestFinal_ex(sha_info->evp_ctx, digest, &length);
+        EVP_MD_CTX_free(sha_info->evp_ctx);
+        sha_info->evp_ctx = NULL;
+    }
+#endif
 }
 
 /* compute the SHA digest of a FILE stream */

@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include "discid/discid.h" /* for LIBDISCID_INTERNAL */
 
+#include <openssl/evp.h>
+
 /* Useful defines & typedefs */
 typedef unsigned char SHA_BYTE;	/* 8-bit quantity */
 typedef unsigned long SHA_LONG;	/* 32-or-more-bit quantity */
@@ -20,10 +22,14 @@ typedef unsigned long SHA_LONG;	/* 32-or-more-bit quantity */
 #define SHA_DIGESTSIZE		20
 
 typedef struct {
+#if 0
     SHA_LONG digest[5];		/* message digest */
     SHA_LONG count_lo, count_hi;	/* 64-bit bit count */
     SHA_BYTE data[SHA_BLOCKSIZE];	/* SHA data buffer */
     size_t local;			/* unprocessed amount in data */
+#else
+    EVP_MD_CTX* evp_ctx;
+#endif
 } SHA_INFO;
 
 LIBDISCID_INTERNAL void sha_init(SHA_INFO *);
